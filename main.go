@@ -1,29 +1,22 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"context"
+	"fmt"
+	"main/application"
+	"os"
+	"os/signal"
 )
 
 func main() {
-	// port := "8080"
-	// fmt.Printf("Starting server on port %s", port)
+	application := application.New(application.LoadConfig())
 
-	r := gin.Default()
-	r.GET("/ping", pingHandler)
-	r.GET("/", basicHandler)
-	r.Run(":8080")
-}
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
 
-func pingHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
-}
+	err := application.Start(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-func basicHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "hello world",
-	})
 }
